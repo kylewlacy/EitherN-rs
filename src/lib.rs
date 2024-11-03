@@ -33,7 +33,7 @@ use std::iter;
 use std::ops::Deref;
 use std::ops::DerefMut;
 #[cfg(feature = "use_std")]
-use std::io::{self, Write, Read, BufRead};
+use std::io::{self, Write, Read, Seek, BufRead};
 #[cfg(feature = "use_std")]
 use std::error::Error;
 
@@ -248,6 +248,19 @@ macro_rules! impl_enums {
                 match *self {
                     $enum_name_head::$n_titlecase_head(ref mut value) => value.consume(amt),
                     $( $enum_name_head::$n_titlecase_tail(ref mut value) => value.consume(amt) ),*
+                }
+            }
+        }
+
+        #[cfg(feature = "use_std")]
+        impl<$n_titlecase_head, $( $n_titlecase_tail ),*> Seek for
+            $enum_name_head<$n_titlecase_head, $( $n_titlecase_tail ),*>
+            where $n_titlecase_head: Seek, $( $n_titlecase_tail: Seek ),*
+        {
+            fn seek(&mut self, pos: io::SeekFrom) -> io::Result<u64> {
+                match *self {
+                    $enum_name_head::$n_titlecase_head(ref mut value) => value.seek(pos),
+                    $( $enum_name_head::$n_titlecase_tail(ref mut value) => value.seek(pos) ),*
                 }
             }
         }
